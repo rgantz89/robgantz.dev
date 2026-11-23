@@ -43,12 +43,22 @@ Everything here is checkable from outside with `curl -I https://robgantz.dev`.
 
 ```
 site/      What gets deployed: HTML, CSS, JS, fonts, images
-infra/     CloudFront headers policy and function, Route 53 CAA records
+infra/     CloudFront headers policy and function, Route 53 CAA records, IAM deploy role
+.github/   Deploy workflow (GitHub Actions, OIDC to AWS)
 scripts/   deploy.sh: upload site/ with explicit content types and cache headers, then invalidate
 licenses/  Third-party licenses (Geist fonts, SIL OFL 1.1)
 ```
 
 ## Deploy
+
+Pushing to `main` deploys automatically ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)):
+
+1. GitHub Actions requests a short-lived OIDC token. No AWS keys are stored in GitHub.
+2. AWS trades the token for temporary credentials on an IAM role that trusts only the `main` branch of this repo. The role can upload to the site bucket and invalidate the distribution, nothing else.
+3. `scripts/deploy.sh` uploads `site/` and invalidates the cache.
+4. A smoke test checks that each page returns 200 and that the security headers are present.
+
+To deploy by hand:
 
 ```bash
 BUCKET=<bucket-name> DISTRIBUTION_ID=<distribution-id> ./scripts/deploy.sh             # whole site
@@ -61,8 +71,7 @@ The resume PDF is uploaded separately and isn't kept in git.
 
 ## Next
 
-- Deploy from GitHub Actions on push to `main`, authenticating to AWS through OIDC so no keys are stored.
-- Define the bucket, distribution and DNS in Terraform.
+- Define the bucket, distribution, DNS and deploy role in Terraform.
 
 ## Credits
 

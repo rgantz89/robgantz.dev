@@ -1,0 +1,51 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "scripts/deploy.sh"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+# OIDC: GitHub issues a short-lived token, AWS trades it for temporary credentials.
+# The IAM role only trusts the main branch of this repo, so forks and other branches can't assume it.
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Upload site and invalidate cache
+        run: ./scripts/deploy.sh
+        env:
+          BUCKET: ${{ secrets.S3_BUCKET }}
+          DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          for path in / /change-governance.html /ops-dashboards-aws.html; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "https://robgantz.dev${path}")
+            echo "${path} ${code}"
+            [ "$code" = 200 ]
+          done
+          headers=$(curl -sI https://robgantz.dev/)
+          grep -qi '^content-security-policy:' <<<"$headers"
+          grep -qi '^strict-transport-security:' <<<"$headers"
+          echo "security headers present"
