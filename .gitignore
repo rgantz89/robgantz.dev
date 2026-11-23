@@ -1,0 +1,16 @@
+# Credentials and local config
+aws-temp-creds.txt
+*.pem
+*.key
+.env
+.env.*
+.aws/
+
+# Resume PDFs are published separately, never committed
+*.pdf
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+__pycache__/
