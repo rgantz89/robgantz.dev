@@ -43,7 +43,7 @@ Everything here is checkable from outside with `curl -I https://robgantz.dev`.
 
 ```
 site/      What gets deployed: HTML, CSS, JS, fonts, images
-infra/     CloudFront headers policy and function, Route 53 CAA records, IAM deploy role
+infra/     CloudFront headers policy and function, Route 53 CAA and DMARC records, IAM deploy role
 .github/   Deploy workflow (GitHub Actions, OIDC to AWS)
 scripts/   deploy.sh: upload site/ with explicit content types and cache headers, then invalidate
 licenses/  Third-party licenses (Geist fonts, SIL OFL 1.1)
