@@ -72,7 +72,7 @@ Two GitHub Actions workflows, both using OIDC roles:
 ## Repo layout
 
 ```
-site/              What gets deployed: HTML, CSS, JS, fonts, images, status page
+site/              What gets deployed: HTML, CSS, JS, fonts, images, status page, public resume
 infra/terraform/   All AWS infrastructure: site, DNS, monitoring, CI roles
   lambda/          Uptime checker and its unit tests
   functions/       CloudFront Function source

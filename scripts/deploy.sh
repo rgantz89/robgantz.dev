@@ -6,14 +6,13 @@
 #   BUCKET=<bucket-name> DISTRIBUTION_ID=<distribution-id> ./scripts/deploy.sh index.html # selected files
 #
 # Requires AWS CLI v2 and credentials that can write to the bucket and create invalidations.
-# resume.pdf is published separately and is not tracked in git.
 set -euo pipefail
 : "${BUCKET:?set BUCKET}"
 : "${DISTRIBUTION_ID:?set DISTRIBUTION_ID}"
 cd "$(dirname "$0")/../site"
 
 if [ "$#" -eq 0 ]; then
-  mapfile -t files < <(find . -type f ! -name resume.pdf | sed 's#^\./##' | sort)
+  mapfile -t files < <(find . -type f | sed 's#^\./##' | sort)
 else
   files=("$@")
 fi

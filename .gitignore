@@ -6,8 +6,9 @@ aws-temp-creds.txt
 .env.*
 .aws/
 
-# Resume PDFs are published separately, never committed
+# PDFs stay out of git, except the public (phone-free) resume the site serves
 *.pdf
+!site/resume.pdf
 
 # OS and editor files
 .DS_Store
