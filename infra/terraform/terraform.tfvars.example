@@ -1,0 +1,3 @@
+# Copy to terraform.tfvars (gitignored) for local runs. CI passes these as TF_VAR_* secrets.
+site_bucket_name = "<site-bucket-name>"
+tf_state_bucket  = "<terraform-state-bucket-name>"

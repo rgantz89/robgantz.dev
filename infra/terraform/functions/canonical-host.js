@@ -1,6 +1,3 @@
-// CloudFront Function (cloudfront-js-2.0), viewer-request.
-// Sends www.robgantz.dev and the default *.cloudfront.net hostname to the apex
-// with a 301, keeping the path and query string.
 function handler(event) {
   var req = event.request;
   var host = req.headers.host ? req.headers.host.value : '';
