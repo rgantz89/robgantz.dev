@@ -35,6 +35,10 @@ flowchart LR
 | CloudWatch + SNS | Alarms email me if the site is down, the checker stops reporting, security headers go missing, or the certificate is within 21 days of expiry. |
 | AWS Budgets | Emails me if monthly spend heads past $5. |
 
+## Change risk playground
+
+[`/change-risk-playground.html`](https://robgantz.dev/change-risk-playground.html) is an interactive, browser-only demo of how my change governance platform screens network changes: site lockdowns, cross-team conflicts, maintenance windows, and missing documentation, then a risk-ranked worklist. All data is synthetic. The rules engine in [`playground.js`](site/playground.js) is pure JavaScript with unit tests in [`tests/`](tests/playground.test.js), and deploys are blocked if they fail.
+
 ## Monitoring and SLO
 
 The [status page](https://robgantz.dev/status.html) is fed by the uptime Lambda ([`uptime_check.py`](infra/terraform/lambda/uptime_check.py)):
@@ -65,14 +69,15 @@ Two GitHub Actions workflows, both using OIDC roles:
 
 | Workflow | Trigger | What it does | AWS role |
 |---|---|---|---|
-| [`deploy.yml`](.github/workflows/deploy.yml) | Push to `main` touching `site/` | Uploads files, invalidates the cache, smoke-tests pages and headers | Upload to the site bucket and invalidate the distribution, nothing else |
+| [`deploy.yml`](.github/workflows/deploy.yml) | Push to `main` touching `site/` or `tests/` | Runs the playground unit tests, uploads files, invalidates the cache, smoke-tests pages and headers | Upload to the site bucket and invalidate the distribution, nothing else |
 | [`terraform.yml`](.github/workflows/terraform.yml) | Pull request | `fmt` check, Lambda unit tests, `terraform plan` | Read-only |
 | | Push to `main` touching `infra/terraform/` | Plan and apply, after approval in the `production` environment | Write access limited to this project's resources by name and ARN |
 
 ## Repo layout
 
 ```
-site/              What gets deployed: HTML, CSS, JS, fonts, images, status page, public resume
+site/              What gets deployed: HTML, CSS, JS, fonts, images, status page, playground, public resume
+tests/             Unit tests for the change risk playground's rules engine (node --test)
 infra/terraform/   All AWS infrastructure: site, DNS, monitoring, CI roles
   lambda/          Uptime checker and its unit tests
   functions/       CloudFront Function source

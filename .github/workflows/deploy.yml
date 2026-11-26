@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "site/**"
+      - "tests/**"
       - "scripts/deploy.sh"
       - ".github/workflows/deploy.yml"
   workflow_dispatch:
@@ -26,6 +27,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # Nothing deploys if the playground's rules engine fails its tests.
+      - name: Unit tests
+        run: node --test tests/playground.test.js
+
       - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
@@ -40,7 +45,7 @@ jobs:
       - name: Smoke test
         run: |
           set -euo pipefail
-          for path in / /change-governance.html /ops-dashboards-aws.html; do
+          for path in / /change-governance.html /ops-dashboards-aws.html /infrastructure-as-code.html /change-risk-playground.html /status.html; do
             code=$(curl -s -o /dev/null -w '%{http_code}' "https://robgantz.dev${path}")
             echo "${path} ${code}"
             [ "$code" = 200 ]

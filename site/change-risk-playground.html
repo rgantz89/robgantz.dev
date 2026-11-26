@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en" data-pg-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change risk playground | Robert Gantz</title>
+<meta name="description" content="Submit a network change and watch it get screened for lockdowns, cross-team conflicts, maintenance windows, and missing paperwork. A live demo of how my change governance platform works, on synthetic data.">
+<link rel="canonical" href="https://robgantz.dev/change-risk-playground.html">
+<meta name="theme-color" content="#060D1B">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Change risk playground">
+<meta property="og:description" content="Submit a network change and watch it get screened, ranked, and flagged. Synthetic data, real logic.">
+<meta property="og:url" content="https://robgantz.dev/change-risk-playground.html">
+<meta property="og:image" content="https://robgantz.dev/assets/og.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Geist';src:url('assets/fonts/Geist-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Geist Mono';src:url('assets/fonts/GeistMono-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+*{box-sizing:border-box}
+html{--site-bg:#060D1B}
+body{margin:0;background:#060D1B;color:#E6EDF5;font-family:Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;
+  background-image:radial-gradient(900px 480px at 8% -10%,rgba(34,211,238,.10),transparent 60%),radial-gradient(800px 500px at 100% 0%,rgba(59,130,246,.10),transparent 55%)}
+a{color:#22D3EE}a:hover{color:#A5F3FC}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #22D3EE;outline-offset:2px;border-radius:8px}
+.mono{font-family:'Geist Mono',ui-monospace,monospace}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0}
+header.top nav{display:flex;gap:22px;font-size:.9375rem}
+header.top nav a{color:#9FB0C3;text-decoration:none}header.top nav a:hover{color:#fff}
+.intro{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px 40px;margin:18px 0 26px}
+.eyebrow{font-family:'Geist Mono',monospace;color:#22D3EE;font-size:.8125rem;letter-spacing:.08em;text-transform:uppercase}
+h1{margin:10px 0 10px;font-size:clamp(2rem,5vw,3.25rem);letter-spacing:-.035em;line-height:1.05}
+.lede{margin:0;color:#9FB0C3;max-width:680px;font-size:1.0625rem}
+.side-note{max-width:340px;color:#8597AC;font-size:.875rem;border-left:2px solid #1C3150;padding-left:14px}
+
+/* ---------- the dashboard (themeable) ---------- */
+.pg{--bg1:#0a1120;--bg2:#05080f;--panel1:rgba(20,30,52,.74);--panel2:rgba(12,19,36,.58);--ink:#eef3fb;--muted:#9aacca;--faint:#657699;
+  --line:rgba(110,140,190,.16);--hair:rgba(110,140,190,.10);--chip:rgba(70,100,160,.18);--chipink:#cdd9ee;--input:rgba(8,14,28,.8);
+  --cardshadow:0 1px 0 rgba(255,255,255,.045) inset,0 20px 44px -20px rgba(0,0,0,.75);--glowA:.8;
+  position:relative;border:1px solid var(--line);border-radius:24px;overflow:hidden;color:var(--ink);padding:22px 22px 26px;
+  background:radial-gradient(900px 500px at 12% -5%,rgba(30,64,175,.20),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(13,116,122,.14),transparent 55%),radial-gradient(1000px 700px at 80% 115%,rgba(22,101,52,.13),transparent 55%),linear-gradient(180deg,var(--bg1),var(--bg2));
+  box-shadow:0 40px 90px -40px rgba(0,0,0,.8);transition:color .3s}
+html[data-pg-theme="light"] .pg{--bg1:#f3f6fb;--bg2:#e8ecf4;--panel1:rgba(255,255,255,.94);--panel2:rgba(255,255,255,.82);--ink:#0e1a31;--muted:#4c5b76;--faint:#7d8ca6;
+  --line:rgba(25,55,110,.13);--hair:rgba(25,55,110,.08);--chip:rgba(30,64,175,.09);--chipink:#28406a;--input:#fff;
+  --cardshadow:0 1px 0 rgba(255,255,255,.9) inset,0 12px 28px -14px rgba(25,45,85,.3);--glowA:.3;
+  background:radial-gradient(900px 500px at 12% -5%,rgba(30,64,175,.10),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(13,116,122,.08),transparent 55%),linear-gradient(180deg,var(--bg1),var(--bg2))}
+.pg-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pg-brand{display:flex;align-items:center;gap:12px}
+.pg-mark{width:40px;height:40px;border-radius:11px;flex:none;background:linear-gradient(135deg,#1e40af,#0e7490 60%,#0f766e);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;letter-spacing:.03em;box-shadow:0 0 0 1px rgba(255,255,255,.16) inset,0 6px 20px rgba(14,116,144,.5)}
+.pg-brand b{display:block;font-size:1.125rem;letter-spacing:-.02em;line-height:1.15}
+.pg-brand small{display:block;font-size:.6875rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+.pg-sp{flex:1}
+.pg-upd{font-size:.6875rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}.pg-upd b{color:var(--ink)}
+.pg-pill{font-size:.6875rem;font-weight:600;color:var(--chipink);background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+.pg-toggle{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--panel1);color:var(--ink);cursor:pointer;display:grid;place-items:center;box-shadow:var(--cardshadow)}
+.pg-toggle svg{width:16px;height:16px}
+.pg-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 18px}
+.pg-tab{font:inherit;font-size:.8125rem;font-weight:500;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:7px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:.2s}
+.pg-tab:hover{color:var(--ink)}
+.pg-tab.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,#1e3a8a,#1d4ed8);box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 6px 22px rgba(29,78,216,.6)}
+.pg-badge{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;font-size:.6875rem;font-weight:700;display:grid;place-items:center;box-shadow:0 0 10px rgba(180,83,9,.55)}
+.pg-tab.active .pg-badge{background:rgba(255,255,255,.92);color:#1d4ed8;box-shadow:none}
+.pg-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.pg-card{position:relative;border:1px solid var(--line);border-radius:16px;background:linear-gradient(160deg,var(--panel1),var(--panel2));box-shadow:var(--cardshadow);overflow:hidden}
+.pg-card::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,transparent,var(--g,#1d4ed8),transparent)}
+.pg-metric{font:inherit;color:inherit;text-align:left;padding:16px 16px 14px;display:flex;flex-direction:column;cursor:pointer;transition:transform .15s,border-color .15s}
+.pg-metric:hover{transform:translateY(-2px);border-color:var(--g)}
+.pg-metric.active{border-color:var(--g);box-shadow:var(--cardshadow),0 0 0 1px var(--g) inset}
+.pg-blob{position:absolute;width:150px;height:150px;right:-30px;top:-40px;border-radius:50%;background:radial-gradient(circle,var(--g),transparent 68%);opacity:calc(var(--glowA)*.55);filter:blur(7px);pointer-events:none}
+.pg-metric .k{font-size:.6875rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:500;position:relative}
+.pg-metric .v{font-size:2.4rem;font-weight:600;letter-spacing:-.02em;margin-top:6px;line-height:1;position:relative}
+.pg-metric .note{font-size:.75rem;color:var(--faint);margin-top:7px;position:relative}
+.pg-sec{margin:26px 0 12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pg-sec h2{font-size:1rem;margin:0;font-weight:600;letter-spacing:-.01em}
+.pg-sec .hint{font-size:.75rem;color:var(--faint)}
+.pg-filter{display:inline-flex;align-items:center;gap:8px;font-size:.75rem;color:var(--chipink);background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px}
+.pg-filter[hidden]{display:none}
+.pg-filter button{font:inherit;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:999px}
+.pg-filter button:hover{color:var(--ink)}
+.pg-grid{display:grid;grid-template-columns:1fr 1.12fr;gap:14px}
+.pg-panel{position:relative;border:1px solid var(--line);border-radius:18px;background:linear-gradient(160deg,var(--panel1),var(--panel2));box-shadow:var(--cardshadow);padding:18px 20px;overflow:hidden}
+.pg-panel h3{font-size:.875rem;margin:0 0 2px;font-weight:600}
+.pg-panel .cap{font-size:.75rem;color:var(--faint);margin:0 0 10px}
+.pg-donut{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:center}
+.pg-ring{position:relative;width:250px;height:250px;flex:none}
+.pg-halo{position:absolute;inset:38px;border-radius:50%;background:radial-gradient(circle,rgba(30,64,175,.42),rgba(13,116,122,.14) 45%,transparent 70%);filter:blur(15px);opacity:var(--glowA);animation:pgBreathe 5s ease-in-out infinite}
+.pg-ring svg{position:relative;transform:rotate(-90deg)}
+.pg-ring circle{transition:stroke-dasharray .7s cubic-bezier(.34,.8,.3,1),stroke-dashoffset .7s cubic-bezier(.34,.8,.3,1)}
+.pg-center{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.pg-center b{font-family:'Geist Mono',monospace;font-size:2.75rem;font-weight:700;letter-spacing:-.02em;background:linear-gradient(180deg,#fff,#8fb4ef);-webkit-background-clip:text;background-clip:text;color:transparent}
+html[data-pg-theme="light"] .pg-center b{background:linear-gradient(180deg,#14306e,#1d4ed8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pg-center span{font-size:.6875rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+.pg-legend{display:flex;flex-direction:column;gap:7px;min-width:180px}
+.pg-legend-h{font-size:.6875rem;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;margin-top:6px}
+.pg-legend-row{display:flex;align-items:center;gap:10px;font-size:.8125rem}
+.pg-legend-row .dot,.pg-blegend .dot{width:11px;height:11px;border-radius:4px;flex:none}
+.pg-legend-row .n{margin-left:auto;color:var(--muted)}
+.pg-bars{display:flex;flex-direction:column;gap:14px;margin-top:6px}
+.pg-bar .top{display:flex;justify-content:space-between;font-size:.8125rem;margin-bottom:7px}
+.pg-bar .name{font-weight:500}.pg-bar .tot{color:var(--muted)}
+.track{height:24px;border-radius:8px;overflow:hidden;display:flex;background:rgba(110,140,190,.10);box-shadow:inset 0 1px 3px rgba(0,0,0,.4),inset 0 0 0 1px var(--hair)}
+.track .seg{border:0;padding:0;height:100%;cursor:pointer;transition:width .7s cubic-bezier(.34,.8,.3,1),filter .15s;box-shadow:0 0 10px rgba(37,99,235,.25)}
+.track .seg:hover{filter:brightness(1.25)}
+.track .seg.active{outline:2px solid #fff;outline-offset:-2px}
+.pg-blegend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:16px;padding-top:14px;border-top:1px solid var(--hair)}
+.pg-blegend .item{display:flex;align-items:center;gap:7px;font-size:.75rem;color:var(--muted)}
+.pg-blegend .dot{width:10px;height:10px;border-radius:3px}
+.pg-grid2{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:14px;margin-top:14px;align-items:start}
+.pg-presets{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.pg-presets button{font:inherit;font-size:.75rem;color:var(--chipink);background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:5px 11px;cursor:pointer}
+.pg-presets button:hover{border-color:#2563eb;color:var(--ink)}
+.pg-form{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.pg-form label{display:flex;flex-direction:column;gap:4px;font-size:.6875rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.pg-form .full{grid-column:1/-1}
+.pg-form select,.pg-form input[type=text]{font:inherit;font-size:.875rem;color:var(--ink);background:var(--input);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-transform:none;letter-spacing:0;min-width:0;width:100%}
+.pg-checks{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;padding:10px 12px;border:1px dashed var(--line);border-radius:12px}
+.pg-checks label{flex-direction:row;align-items:center;gap:8px;font-size:.8125rem;text-transform:none;letter-spacing:0;color:var(--ink)}
+.pg-checks input{accent-color:#2563eb;width:16px;height:16px}
+.pg-actions{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.pg-btn{font:inherit;font-weight:600;font-size:.9375rem;border:0;border-radius:999px;padding:11px 20px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#1e3a8a,#2563eb);box-shadow:0 0 0 1px rgba(255,255,255,.15) inset,0 8px 22px -6px rgba(37,99,235,.7)}
+.pg-btn:hover{filter:brightness(1.1)}
+.pg-btn.ghost{background:transparent;color:var(--muted);box-shadow:0 0 0 1px var(--line) inset}
+.pg-errors{grid-column:1/-1;color:#f87171;font-size:.8125rem;min-height:0;margin:0}
+.pg-result{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--panel2)}
+.pg-result-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.pg-flaglist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.pg-flaglist li{display:flex;gap:10px;align-items:flex-start}
+.pg-flaglist .dot{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none;box-shadow:0 0 8px currentColor}
+.pg-pass{color:#4ade80;margin:6px 0 0;font-size:.875rem}
+html[data-pg-theme="light"] .pg-pass{color:#15803d}
+.strong{font-weight:600}.muted{color:var(--muted)}.small{font-size:.75rem}
+.pg-risk{display:inline-block;font-family:'Geist Mono',monospace;font-size:.6875rem;font-weight:600;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.pg-risk.high{background:rgba(220,38,38,.16);color:#f87171;box-shadow:0 0 12px rgba(220,38,38,.25)}
+.pg-risk.medium{background:rgba(245,158,11,.15);color:#fbbf24}
+.pg-risk.low{background:rgba(34,197,94,.13);color:#4ade80}
+html[data-pg-theme="light"] .pg-risk.high{color:#b91c1c}html[data-pg-theme="light"] .pg-risk.medium{color:#b45309}html[data-pg-theme="light"] .pg-risk.low{color:#15803d}
+.pg-tablewrap{overflow-x:auto;margin:0 -4px}
+table.pg-table{width:100%;border-collapse:collapse;font-size:.8125rem;min-width:640px}
+.pg-table th{text-align:left;color:var(--faint);font-weight:500;font-size:.6875rem;letter-spacing:.07em;text-transform:uppercase;padding:0 8px 8px}
+.pg-table td{padding:9px 8px;border-top:1px solid var(--hair);vertical-align:top}
+.pg-table tr.mine td{background:rgba(37,99,235,.14)}
+.pg-table tr.mine td:first-child{box-shadow:inset 3px 0 0 #2563eb}
+.pg-table td.dev .mono{white-space:nowrap}
+.pg-more{margin-top:12px}
+.pg-table .flags{display:flex;flex-wrap:wrap;gap:4px}
+.pg-chip{font-size:.6875rem;padding:2px 8px;border-radius:999px;border:1px solid color-mix(in srgb,var(--c,#2563eb) 55%,transparent);color:var(--ink);background:color-mix(in srgb,var(--c,#2563eb) 16%,transparent);white-space:nowrap}
+.pg-chip.clean{--c:#22c55e;color:#4ade80}
+html[data-pg-theme="light"] .pg-chip.clean{color:#15803d}
+@keyframes pgBreathe{0%,100%{opacity:calc(var(--glowA)*.7);transform:scale(.97)}50%{opacity:var(--glowA);transform:scale(1.03)}}
+.after{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0 0}
+.after div{border:1px solid #142339;border-radius:14px;padding:16px;background:rgba(11,23,41,.6)}
+.after b{display:block;margin-bottom:4px}.after span{color:#8597AC;font-size:.875rem}
+footer{border-top:1px solid #142339;margin-top:40px;padding:24px 0 40px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;color:#8597AC;font-size:.875rem}
+footer a{color:#8597AC;text-decoration:none}footer a:hover{color:#fff}
+@media (max-width:980px){.pg-grid,.pg-grid2{grid-template-columns:1fr}.after{grid-template-columns:1fr}}
+@media (max-width:700px){.pg-metrics{grid-template-columns:repeat(2,1fr)}.pg{padding:16px 14px 20px;border-radius:18px}.pg-metric .v{font-size:1.9rem}.pg-form{grid-template-columns:1fr}.pg-checks{grid-template-columns:1fr}.pg-ring{width:220px;height:220px}.pg-ring svg{width:220px;height:220px}header.top nav{gap:14px}}
+@media (prefers-reduced-motion:reduce){.pg-halo{animation:none}.pg-ring circle,.track .seg{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a href="/" aria-label="Robert Gantz, home" style="display: inline-flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 1.0625rem; letter-spacing: -0.01em">
+        <svg aria-hidden="true" width="34" height="34" viewBox="0 0 64 64" style="display: block; flex: 0 0 auto"><rect x="1" y="1" width="62" height="62" rx="16" fill="#0B1729" stroke="#22385A" stroke-width="1.5"></rect><path d="M12 24 L19 31 L12 38" fill="none" stroke="#22D3EE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path><path d="M24.138 39.5V37.484H26.91V30.302H24.138V28.286H28.8L28.947 30.47Q29.472 28.286 31.634999999999998 28.286H34.092V30.365000000000002H31.782Q29.388 30.365000000000002 29.388 32.948V37.484H32.853V39.5ZM40.737 42.902Q38.763 42.902 37.503 42.019999999999996Q36.243 41.138 35.886 39.668L38.49 39.5Q38.679 40.109 39.204 40.4555Q39.729 40.802 40.737 40.802Q42.018 40.802 42.711 40.2455Q43.403999999999996 39.689 43.403999999999996 38.576V37.106Q43.005 37.925 42.1965 38.418499999999995Q41.388 38.912 40.233000000000004 38.912Q38.868 38.912 37.797 38.2295Q36.726 37.547 36.117000000000004 36.3395Q35.508 35.132 35.508 33.536Q35.508 31.877 36.1065 30.637999999999998Q36.705 29.399 37.754999999999995 28.7165Q38.805 28.034 40.17 28.034Q41.304 28.034 42.1755 28.558999999999997Q43.047 29.084 43.446 30.008L43.488 28.286H45.882000000000005V38.345Q45.882000000000005 40.571 44.496 41.7365Q43.11 42.902 40.737 42.902ZM40.737 36.833Q41.934 36.833 42.658500000000004 35.971999999999994Q43.383 35.111 43.403999999999996 33.494Q43.425 31.898 42.6795 31.016Q41.934 30.134 40.737 30.134Q39.477000000000004 30.134 38.784000000000006 31.016Q38.091 31.898 38.091 33.494Q38.091 35.111 38.7945 35.971999999999994Q39.498 36.833 40.737 36.833Z" fill="#E6EDF5"></path><rect x="48.1" y="25" width="5" height="15" rx="1" fill="#22D3EE"></rect></svg>
+        Robert Gantz
+      </a>
+    <nav aria-label="Site"><a href="change-governance.html">Case study</a><a href="/">Home</a></nav>
+  </header>
+
+  <div class="intro">
+    <div>
+      <div class="eyebrow">Interactive demo</div>
+      <h1>Change risk playground</h1>
+      <p class="lede">Submit a network change and watch it get screened the way my change governance platform screens real ones: site lockdowns, conflicts with other teams' work, maintenance windows, and missing paperwork. Then it's ranked against tonight's queue.</p>
+    </div>
+    <p class="side-note">Everything here is synthetic and runs in your browser. The rules are simplified: the production engine runs 35 checks against live topology, calendars, and the attachments themselves.</p>
+  </div>
+
+  <section class="pg" aria-label="Change risk dashboard">
+    <div class="pg-head">
+      <div class="pg-brand"><div class="pg-mark" aria-hidden="true">ACAD</div><div><b>Automated Change Advisory Dashboard</b><small>Tonight's maintenance queue</small></div></div>
+      <div class="pg-sp"></div>
+      <div class="pg-upd">Last updated <b id="pg-updated">just now</b></div>
+      <div class="pg-pill">Synthetic data</div>
+      <button class="pg-toggle" id="pg-theme" type="button" aria-label="Switch theme"></button>
+    </div>
+
+    <div class="pg-tabs" id="pg-tabs" role="group" aria-label="Filter by team"></div>
+    <div class="pg-metrics" id="pg-metrics"></div>
+
+    <div class="pg-sec">
+      <h2>Queue Intelligence</h2>
+      <span class="hint">Click a metric card or a bar segment to filter the worklist</span>
+      <span class="pg-filter" id="pg-filter" hidden><span id="pg-filter-text"></span><button type="button" id="pg-filter-clear" aria-label="Clear filter">✕</button></span>
+    </div>
+
+    <div class="pg-grid">
+      <div class="pg-panel">
+        <h3>Queue Health</h3>
+        <p class="cap" id="pg-ring-cap"></p>
+        <div class="pg-donut">
+          <div class="pg-ring">
+            <div class="pg-halo"></div>
+            <svg viewBox="0 0 250 250" width="250" height="250" role="img" aria-label="Queue health rings">
+              <defs>
+                <linearGradient id="gApproved" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#15803d"/><stop offset="1" stop-color="#22c55e"/></linearGradient>
+                <linearGradient id="gPending" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e40af"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+                <linearGradient id="gProg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b45309"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+                <linearGradient id="gOther" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#475569"/><stop offset="1" stop-color="#64748b"/></linearGradient>
+                <linearGradient id="gHigh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#991b1b"/><stop offset="1" stop-color="#dc2626"/></linearGradient>
+                <linearGradient id="gFlag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1d4ed8"/><stop offset="1" stop-color="#0e7490"/></linearGradient>
+                <linearGradient id="gClean" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#15803d"/><stop offset="1" stop-color="#22c55e"/></linearGradient>
+                <filter id="pgGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+              </defs>
+              <g id="pg-outer-glow" filter="url(#pgGlow)" opacity=".7"></g>
+              <g id="pg-inner-glow" filter="url(#pgGlow)" opacity=".7"></g>
+              <g id="pg-outer"></g>
+              <g id="pg-inner"></g>
+            </svg>
+            <div class="pg-center"><b id="pg-center">24</b><span>Pending</span></div>
+          </div>
+          <div class="pg-legend" id="pg-legend"></div>
+        </div>
+      </div>
+      <div class="pg-panel">
+        <h3>Action items by coordinator group</h3>
+        <p class="cap">Failed checks on pending changes, by the group that owns them</p>
+        <div class="pg-bars" id="pg-bars"></div>
+        <div class="pg-blegend" id="pg-blegend"></div>
+      </div>
+    </div>
+
+    <div class="pg-grid2">
+      <div class="pg-panel">
+        <h3>Screen a change</h3>
+        <p class="cap">Start from an example, or edit the fields yourself.</p>
+        <div class="pg-presets" role="group" aria-label="Examples">
+          <button type="button" data-preset="clean">Clean change</button>
+          <button type="button" data-preset="conflict">Cross-team conflict</button>
+          <button type="button" data-preset="paperwork">Missing paperwork</button>
+          <button type="button" data-preset="lockdown">Lockdown site</button>
+        </div>
+        <form class="pg-form" id="pg-form" novalidate>
+          <label>Team<select id="f-team"></select></label>
+          <label>Coordinator group<select id="f-group"></select></label>
+          <label class="full">Device<select id="f-device"></select></label>
+          <label class="full">What's changing<input type="text" id="f-action" maxlength="60" autocomplete="off"></label>
+          <label>Start<select id="f-start"></select></label>
+          <label>End<select id="f-end"></select></label>
+          <label class="full">Region on the ticket<select id="f-region"></select></label>
+          <div class="pg-checks">
+            <label><input type="checkbox" id="f-rollback"> Rollback plan attached</label>
+            <label><input type="checkbox" id="f-impact"> Impact statement attached</label>
+            <label><input type="checkbox" id="f-ticket"> Linked to a parent ticket</label>
+            <label><input type="checkbox" id="f-svc"> Service-impacting</label>
+          </div>
+          <p class="pg-errors" id="f-errors" role="alert"></p>
+          <div class="pg-actions">
+            <button class="pg-btn" type="submit">Screen this change</button>
+            <button class="pg-btn ghost" type="button" id="pg-reset" hidden>Reset queue</button>
+          </div>
+        </form>
+        <div class="pg-result" id="pg-result" hidden aria-live="polite"></div>
+      </div>
+      <div class="pg-panel">
+        <h3>Ranked worklist</h3>
+        <p class="cap" id="pg-count"></p>
+        <div class="pg-tablewrap">
+          <table class="pg-table">
+            <thead><tr><th scope="col">#</th><th scope="col">Change</th><th scope="col">Team</th><th scope="col">Device · window</th><th scope="col">Risk</th><th scope="col">Flags</th></tr></thead>
+            <tbody id="pg-rows"></tbody>
+          </table>
+        </div>
+        <button class="pg-btn ghost pg-more" type="button" id="pg-more" hidden></button>
+      </div>
+    </div>
+  </section>
+
+  <div class="after">
+    <div><b>What's real</b><span>The approach: screen every change before review, explain each flag, and rank the queue so approvers start with what could cause an outage.</span></div>
+    <div><b>What's simplified</b><span>Seven checks instead of 35, a fixed device list instead of live topology, and checkboxes instead of reading the attachments.</span></div>
+    <div><b>How it's built</b><span>Plain JavaScript with unit-tested rules, served from S3 and CloudFront. <a href="change-governance.html">Read the case study</a>.</span></div>
+  </div>
+
+  <footer>
+    <span>© 2026 Robert Gantz · <a href="mailto:rob@robgantz.dev">rob@robgantz.dev</a></span>
+    <a href="/">Back to home</a>
+  </footer>
+</div>
+<script src="playground.js" defer></script>
+<script data-goatcounter="https://robgantzdev.goatcounter.com/count" defer src="https://gc.zgo.at/count.js"></script>
+</body>
+</html>
